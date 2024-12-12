@@ -10,18 +10,16 @@ from scipy.fft import fft, fftfreq
 from scipy import signal
 import numpy as np
 
-def simple_plot_summary(_df,show=True):
+def simple_plot_summary(_df, save=False):
     fig, axes = plt.subplots(8,3, figsize = (15,25), constrained_layout=True, sharex=True)
     for j,c in enumerate(_df.columns[2:-1]):
         axes[j//3][j%3].plot(_df['time'], _df[c])
         axes[j//3][j%3].set_title(c)
-    plt.savefig('./figs/plot_summary')
-    if show:
-        plt.show()
-    else:
-        plt.close()
+    if save:
+        plt.savefig('./figs/plot_summary')
+    plt.show()
 
-def comparison_plot_summary(_samples, _labels,show=True):
+def comparison_plot_summary(_samples, _labels, save=False):
     s1,s2,s3 = _samples
     l1,l2,l3 = _labels
     features = s1.columns[4:-1]
@@ -30,12 +28,10 @@ def comparison_plot_summary(_samples, _labels,show=True):
     for j,c in enumerate(features):
         axes[j // 3, j % 3].plot(s1['time'], s1[c]-s3[c], c = 'lightblue')
         axes[j // 3, j % 3].set_title(c, fontsize=20)
-    plt.savefig('./figs/error_summary')
-    if show:
-        plt.show()
-    else:
-        plt.close()
-     
+    if save:
+        plt.savefig('./figs/err_plot_summary_full')
+    plt.show()
+
     fig, axes = plt.subplots(5,3, figsize = (15,25), constrained_layout=True, sharex=True)
     fig.suptitle('Preprocessing Comparison', fontsize=30)
 
@@ -45,12 +41,10 @@ def comparison_plot_summary(_samples, _labels,show=True):
         axes[j // 3, j % 3].plot(s3['time'], s3[c], c = 'orange', label = l3)
         axes[j // 3, j % 3].set_title(c, fontsize=20)
         axes[j // 3, j % 3].legend(fontsize=12)
-    plt.savefig('./figs/comparison_summary')
-    if show:
-        plt.show()
-    else:
-        plt.close()   
-     
+    if save:
+        plt.savefig('./figs/comparison_plot_summary_full')
+    plt.show()
+
     c = 'Physical Fan Speed'
     fig, ax = plt.subplots(1, constrained_layout=True, sharex=True)
     ax.set_title(c)
@@ -58,45 +52,33 @@ def comparison_plot_summary(_samples, _labels,show=True):
     ax.plot(s2['time'], s2[c], c = 'salmon'   , label = l2)
     ax.plot(s3['time'], s3[c], c = 'orange'   , label = l3)
     ax.set_title(c)
-    plt.savefig(f'./figs/comparison_summary_{c}')
-    if show:
-        plt.show()
-    else:
-        plt.close()
+    if save:
+        plt.savefig(f'./figs/comparison_summary_{c}_full')
+    plt.show()
 
     fig, ax = plt.subplots(1, constrained_layout=True, sharex=True)
     ax.set_title(c)
     ax.plot(s1['time'], s1[c]-s3[c], c = 'lightblue')
-    plt.savefig(f'./figs/error_summary_{c}')
-    if show:
-        plt.show()
-    else:
-        plt.close()
+    if save:
+        plt.savefig(f'./figs/error_plot_summary_{c}')
+    plt.show()
 
-
-def plot_fft(signal, name='', show=False):
+def plot_fft(signal, name='', save=False):
     # Compute the Fourier transform & frequencies
     fft_signal = fft(signal)
     freq = fftfreq(len(signal), 0.001)
-    
+
     # Plot the magnitude spectrum
-    plt.plot(freq, np.abs(fft_signal))
-    plt.xlabel("Frequency (Hz)")
-    plt.ylabel("Magnitude")
-    plt.title("Fourier Spectrum " + name)
-    plt.savefig(f'./figs/fft_{name}'.replace('/','_'))
-    plt.close()
-    
-    plt.title('Frequency Response')
-    plt.magnitude_spectrum(signal)
-    plt.savefig(f'./figs/fft_{name}'.replace('/','_'))
-    if show:
-        plt.show()
-    else:
-        plt.close()
+    fig, ax = plt.subplots(1, constrained_layout=True, sharex=True)
+    ax.plot(freq, np.abs(fft_signal))
+    ax.set_xlabel("Frequency (Hz)")
+    ax.set_ylabel("Magnitude")
+    ax.set_title("Fourier Spectrum " + name)
+    if save:
+        plt.savefig(f'./figs/fft_{name}'.replace('/','_'))
+    plt.show()
 
-
-def plot_lpf_summary(num,den,show=False):
+def plot_lpf_summary(num, den, save=False):
     # Compute the impulse response
     t, y = signal.impulse((num, den))
 
@@ -116,8 +98,6 @@ def plot_lpf_summary(num,den,show=False):
     ax.set_xscale('log')
     ax.text(0.5, 0.8, f'fc = {fc:.4f} Hz', fontsize=10,
             bbox=dict(facecolor='white', edgecolor='black', pad=10))
-    plt.savefig('./figs/FrequencyResponse')
-    if show:
-        plt.show()
-    else:
-        plt.close()
+    if save:
+        plt.savefig('./figs/FrequencyResponse'))
+    plt.show()
