@@ -14,6 +14,8 @@ import torch
 from torch.utils.data import DataLoader
 from lstm_helpers import get_model_training_helpers
 
+
+## Class to aid in training and display a progress bar
 class TrainingThread(QThread):
     progress = pyqtSignal(int)
     completed = pyqtSignal()
@@ -35,6 +37,8 @@ class TrainingThread(QThread):
             self.progress.emit(int((epoch + 1) / self.epochs * 100))
         self.completed.emit()
 
+
+## Main class for PyQT GUI Integration
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
@@ -62,6 +66,8 @@ class MainWindow(QMainWindow):
         self.init_data_results_tab()
         self.init_run_model_tab()
 
+
+    ## Results Tab
     def init_data_results_tab(self):
         layout = QVBoxLayout()
 
@@ -87,6 +93,8 @@ class MainWindow(QMainWindow):
 
         self.tab_data_results.setLayout(layout)
 
+
+    ## Model Running Tab
     def init_run_model_tab(self):
         layout = QVBoxLayout()
 
@@ -125,6 +133,8 @@ class MainWindow(QMainWindow):
 
         self.tab_run_model.setLayout(layout)
 
+
+    ## Workflow of this is taken from the main.py file
     def show_preprocessed_plots(self):
 
         col_names = [
@@ -182,7 +192,7 @@ class MainWindow(QMainWindow):
                 rul_list_test += rul
             return rul_list_test, rul_list_train
         
-        # LOAD DATA
+        # LOAD DATA (loads every dataset even though they're not all used in GUI for future implementation)
         folder_path = './CMAPS/'
         listdir(folder_path)
         df_train_fd001 = pd.read_csv(folder_path + 'train_FD001.txt', header = None, sep = ' ')
@@ -259,6 +269,8 @@ class MainWindow(QMainWindow):
         pre_processed_plots(samples, labels)
         plt.show()  # Display the plots
 
+
+    ## Function to run the LSTM test and grab the error values
     def run_lstm_analysis(self):
         if self.df_train is None or self.df_test is None:
             self.results_display.setText("Please run preprocessing first.")
@@ -296,6 +308,7 @@ class MainWindow(QMainWindow):
         self.model, _, _ = get_model_training_helpers(n_features, device)
 
 
+    ## Function to train the model directly in the GUI
     def train_model_handler(self):
         if self.model is None:
             QMessageBox.warning(self, "Warning", "Model is not initialized. Please run LSTM analysis first.")
@@ -333,6 +346,7 @@ class MainWindow(QMainWindow):
         self.training_thread.start()
 
 
+    ## Function to export the trained model to a .pth file
     def save_model_handler(self):
         if self.model is None:
             QMessageBox.warning(self, "Warning", "No model available to save. Train the model first.")
@@ -344,6 +358,7 @@ class MainWindow(QMainWindow):
             QMessageBox.information(self, "Info", f"Model saved successfully at {file_path}.")
 
 
+    ## Function to show the results in plot format
     def show_lstm_plots(self):
         if self.df_train is None or self.df_test is None:
             self.results_display.setText("Please run preprocessing first.")
@@ -364,6 +379,8 @@ class MainWindow(QMainWindow):
         model.load_state_dict(torch.load('model.pth'))
         err_analysis(model, loss_fn, testloader, device, _name='original', show=True)
 
+
+## Main function to run the GUI
 if __name__ == "__main__":
     import sys
     app = QApplication(sys.argv)
