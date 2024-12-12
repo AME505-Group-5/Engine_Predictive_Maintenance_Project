@@ -24,7 +24,7 @@ pd.set_option('display.max_rows', 50)
 
 
 # from gru_helpers import *
-from plot_helpers import comparison_plot_summary
+from plot_helpers import pre_processed_plots, comparison_plot_summary
 from preprocessing_helpers import minMax, get_smoothed_data, get_LPF_filtered_data
 
 col_names = [
@@ -149,19 +149,21 @@ if __name__ == '__main__':
     # 4) Low Pass Filter
     df_train_LPF, df_test_LPF = get_LPF_filtered_data(df_train, df_test, cutoff_low=12, fs=1000, order=5)
 
-    # 5) Sample Data
+    # 5) Preprocessing
     sample = 10
     sample_df               = df_train[df_train['Engine Unit'] == sample].copy()
     smoothed_sample_df      = df_train_smoothed[df_train_smoothed['Engine Unit'] == sample].copy()
     LPF_sample_df           = df_train_LPF[df_train_LPF['Engine Unit'] == sample].copy()
+
+    # Sample Data
     samples = [sample_df,smoothed_sample_df,LPF_sample_df]
     labels = ['original','smoothed','LPF']
-    comparison_plot_summary(samples, labels)
-
+    pre_processed_plots(samples, labels)
+    
     ######################
     # LSTM
     ######################
-    RUN_LSTM = False
+    RUN_LSTM = True
     if RUN_LSTM:
         import torch
         from torch.utils.data import DataLoader
@@ -169,6 +171,7 @@ if __name__ == '__main__':
         from lstm_helpers import  get_model_training_helpers
         device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
+    
         # 2) Model Parameters
         n_features = len(df_train.columns[2:-1])
         window = 20
@@ -178,7 +181,8 @@ if __name__ == '__main__':
         train_units = list(np.random.choice(units, 80, replace = False))
         val_units = list(set(units) - set(train_units))
         print(val_units)
-
+    
+    
         # 3) Original Model
         train_data = df_train[df_train['Engine Unit'].isin(train_units)].copy()
         val_data = df_train[df_train['Engine Unit'].isin(val_units)].copy()
@@ -187,14 +191,14 @@ if __name__ == '__main__':
         testloader = DataLoader(test, batch_size = 100)
         model, loss_fn, optimizer = get_model_training_helpers(n_features, device)
         train_model(model, trainloader, valloader, device, optimizer, loss_fn, epochs=100)
-
+    
         # Save the model to the specified file
         torch.save(model.state_dict(), 'model.pth')
         # Load Models
         model.load_state_dict(torch.load('model.pth'))
-
-        err_analysis(model, loss_fn, testloader, device, _name='original')
-
+    
+        mse, std_dev, se, confidence_interval = err_analysis(model, loss_fn, testloader, device, _name='original')
+    
         # 4) Smoothed Model
         train_data_sm = df_train_smoothed[df_train_smoothed['Engine Unit'].isin(train_units)].copy()
         val_data_sm = df_train_smoothed[df_train_smoothed['Engine Unit'].isin(val_units)].copy()
@@ -203,14 +207,14 @@ if __name__ == '__main__':
         testloader_sm = DataLoader(test_sm, batch_size = 100)
         model_sm, loss_fn_sm, optimizer_sm = get_model_training_helpers(n_features, device)
         train_model(model_sm, trainloader_sm, valloader_sm, device, optimizer_sm, loss_fn_sm, epochs=100)
-
+    
         # Save the model to the specified file
         torch.save(model_sm.state_dict(), 'model_smoothed.pth')
         # Load Models
         model_sm.load_state_dict(torch.load('model_smoothed.pth'))
-
+    
         err_analysis(model_sm, loss_fn_sm, testloader_sm, device, _name='smoothed')
-
+    
         # 5) LPF Model
         train_data_LPF = df_train_LPF[df_train_LPF['Engine Unit'].isin(train_units)].copy()
         val_data_LPF = df_train_LPF[df_train_LPF['Engine Unit'].isin(val_units)].copy()
@@ -219,10 +223,10 @@ if __name__ == '__main__':
         testloader_LPF = DataLoader(test_LPF, batch_size = 100)
         model_LPF, loss_fn_LPF, optimizer_LPF = get_model_training_helpers(n_features, device)
         train_model(model_LPF, trainloader_LPF, valloader_LPF, device, optimizer_LPF, loss_fn_LPF, epochs=100)
-
+    
         # Save the model to the specified file
         torch.save(model_LPF.state_dict(), 'model_LPF.pth')
         # Load Models
         model_LPF.load_state_dict(torch.load('model_LPF.pth'))
-
+    
         err_analysis(model_LPF, loss_fn_LPF, testloader_LPF, device, _name='LPF')
