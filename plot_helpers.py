@@ -25,6 +25,8 @@ def comparison_plot_summary(_samples, _labels, save=False):
     features = s1.columns[4:-1]
     fig, axes = plt.subplots(5,3, figsize = (15,25), constrained_layout=True, sharex=True)
     fig.suptitle('Error Summary', fontsize=30)
+    plt.subplots_adjust(wspace=0.5, hspace=0.5)
+
     for j,c in enumerate(features):
         axes[j // 3, j % 3].plot(s1['time'], s1[c]-s3[c], c = 'lightblue')
         axes[j // 3, j % 3].set_title(c, fontsize=20)
@@ -39,7 +41,7 @@ def comparison_plot_summary(_samples, _labels, save=False):
         axes[j // 3, j % 3].plot(s1['time'], s1[c], c = 'lightblue', label = l1)
         axes[j // 3, j % 3].plot(s2['time'], s2[c], c = 'salmon', label = l2)
         axes[j // 3, j % 3].plot(s3['time'], s3[c], c = 'orange', label = l3)
-        axes[j // 3, j % 3].set_title(c, fontsize=20)
+        axes[j // 3, j % 3].set_title(c, fontsize=18)
         axes[j // 3, j % 3].legend(fontsize=12)
     if save:
         plt.savefig('./figs/comparison_plot_summary_full')
@@ -56,12 +58,12 @@ def comparison_plot_summary(_samples, _labels, save=False):
         plt.savefig(f'./figs/comparison_summary_{c}_full')
     plt.show()
 
-    fig, ax = plt.subplots(1, constrained_layout=True, sharex=True)
-    ax.set_title(c)
-    ax.plot(s1['time'], s1[c]-s3[c], c = 'lightblue')
-    if save:
-        plt.savefig(f'./figs/error_plot_summary_{c}')
-    plt.show()
+    # fig, ax = plt.subplots(1, constrained_layout=True, sharex=True)
+    # ax.set_title(c)
+    # ax.plot(s1['time'], s1[c]-s3[c], c = 'lightblue')
+    # if save:
+    #     plt.savefig(f'./figs/error_plot_summary_{c}')
+    # plt.show()
 
 def plot_fft(signal, name='', save=False):
     # Compute the Fourier transform & frequencies
@@ -98,6 +100,69 @@ def plot_lpf_summary(num, den, save=False):
     ax.set_xscale('log')
     ax.text(0.5, 0.8, f'fc = {fc:.4f} Hz', fontsize=10,
             bbox=dict(facecolor='white', edgecolor='black', pad=10))
-    if save:
-        plt.savefig('./figs/FrequencyResponse'))
+    plt.savefig('./figs/FrequencyResponse')
     plt.show()
+
+
+colors = ['lightblue', 'salmon', 'orange']
+def plot_signal(_samples, _name, _labels):
+    fig, ax = plt.subplots(1, constrained_layout=True, sharex=True)
+    ax.set_title(_name)
+    ax.set_xlabel('cycles')
+    for i in range(len(_samples)):
+        color = 'blue' if len(_samples) == 1 else colors[i]
+        ax.plot(_samples[i]['time'], _samples[i][_name], c = color, label = _labels[i])
+
+    if len(_samples) == 1:
+        ax.set_title(f'{_name} - {_labels[0]}')
+        plt.savefig(f'./figs/signal_{_name}_{_labels}')
+    else:
+        ax.set_title(f'{_name} - comparison')
+        ax.legend()
+        plt.savefig(f'./figs/signal_{_name}_comparison')
+    plt.show()
+
+def comparison_plot_summary_simple(_samples, _labels):
+    features = _samples[0].columns[4:-1]
+    fig, axes = plt.subplots(5,3, figsize = (15,25), constrained_layout=True, sharex=True)
+    fig.suptitle('Raw Data Comparison', fontsize=30)
+    for j,c in enumerate(features):
+        axes[j // 3, j % 3].plot(_samples[0]['time'], _samples[0][c], c = 'blue')
+        axes[j // 3, j % 3].set_title(c, fontsize=20)
+    plt.savefig('./figs/raw_data_signals_comp')
+    plt.show()
+
+def plot_err_summary(_minmax, _lpf):
+    c = 'Physical Fan Speed'
+    
+    # Plot Minmax Signal
+    fig, ax = plt.subplots(1, constrained_layout=True, sharex=True)
+    ax.set_title(f'{c} - minmax')
+    ax.set_xlabel('cycles')    
+    ax.plot(_minmax['time'], _minmax[c], c = 'blue')
+    plt.savefig('./figs/signal_features_minmax')
+    plt.show()
+    
+    # Plot exponential Signal
+    fig, ax = plt.subplots(1, constrained_layout=True, sharex=True)
+    ax.set_title(f'{c} - LPF (Exponential)')
+    ax.set_xlabel('cycles')    
+    ax.plot(_lpf['time'], _lpf[c], c = 'blue')
+    plt.savefig('./figs/signal_features_exponential')
+    plt.show()
+    
+    # Plot HF noise Signal
+    fig, ax = plt.subplots(1, constrained_layout=True, sharex=True)
+    ax.set_title(f'{c} - High Frequency Noise')
+    ax.set_xlabel('cycles')    
+    ax.plot(_lpf['time'], np.abs(_lpf[c]-_minmax[c]), c = 'blue')
+    plt.savefig('./figs/signal_features_hf_error')
+    plt.show()
+    
+    
+    
+    
+    
+    
+    
+    

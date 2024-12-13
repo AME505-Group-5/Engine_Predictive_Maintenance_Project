@@ -24,7 +24,7 @@ pd.set_option('display.max_rows', 50)
 
 
 # from gru_helpers import *
-from plot_helpers import comparison_plot_summary
+from plot_helpers import comparison_plot_summary, plot_signal
 from preprocessing_helpers import minMax, get_smoothed_data, get_LPF_filtered_data
 
 col_names = [
@@ -84,7 +84,7 @@ def get_rul_test_train(_df_test, _rul_test, _df_train):
 
 
 
-SAMPLE = 4
+SAMPLE = 10
 if __name__ == '__main__':
 
     # LOAD DATA
@@ -120,11 +120,6 @@ if __name__ == '__main__':
     df_test_fd004.columns = col_names
 
 
-
-    ##############################
-    #   Dataset & Preprocessing
-    ##############################
-
     # Get data frames & rul lists
     df_test  = df_test_fd001
     df_train = df_train_fd001
@@ -132,30 +127,49 @@ if __name__ == '__main__':
     rul_list_test, rul_list_train = get_rul_test_train(df_test, rul_test, df_train)
     df_test['rul'], df_train['rul'] = rul_list_test, rul_list_train
 
-    # Chose sample engine
-    # sample_df = df_train[df_train['Engine Unit'] == SAMPLE].copy()
 
+    ##############################
+    #   Dataset & Preprocessing
+    ##############################
+    
     # 1) Chose features
     df_train = df_train.drop(drop_cols1, axis = 1)
     df_test = df_test.drop(drop_cols1, axis = 1)
+    samples = [df_train[df_train['Engine Unit'] == SAMPLE]]
+    labels = ['Raw']
+    plot_signal(samples, 'Physical Fan Speed', labels)
+    from plot_helpers import comparison_plot_summary_simple
+    comparison_plot_summary_simple(samples, labels)
 
     # 2) MinMax Scaling
     df_train = minMax(df_train)
     df_test  = minMax(df_test)
+    samples = [df_train[df_train['Engine Unit'] == SAMPLE]]
+    labels = ['MinMax']
+    plot_signal(samples, 'Physical Fan Speed', labels)
+
 
     # 3) Smoothing: Exponentially Weighted Average
     df_train_smoothed, df_test_smoothed = get_smoothed_data(df_train, df_test)
+    samples = [df_train_smoothed[df_train_smoothed['Engine Unit'] == SAMPLE]]
+    labels = ['Smoothed']
+    plot_signal(samples, 'Physical Fan Speed', labels)
+
 
     # 4) Low Pass Filter
     df_train_LPF, df_test_LPF = get_LPF_filtered_data(df_train, df_test, cutoff_low=12, fs=1000, order=5)
+    samples = [df_train_LPF[df_train_LPF['Engine Unit'] == SAMPLE]]
+    labels = ['LPF']
+    plot_signal(samples, 'Physical Fan Speed', labels)
+
 
     # 5) Sample Data
-    sample = 10
-    sample_df               = df_train[df_train['Engine Unit'] == sample].copy()
-    smoothed_sample_df      = df_train_smoothed[df_train_smoothed['Engine Unit'] == sample].copy()
-    LPF_sample_df           = df_train_LPF[df_train_LPF['Engine Unit'] == sample].copy()
+    sample_df               = df_train[df_train['Engine Unit'] == SAMPLE].copy()
+    smoothed_sample_df      = df_train_smoothed[df_train_smoothed['Engine Unit'] == SAMPLE].copy()
+    LPF_sample_df           = df_train_LPF[df_train_LPF['Engine Unit'] == SAMPLE].copy()
     samples = [sample_df,smoothed_sample_df,LPF_sample_df]
-    labels = ['original','smoothed','LPF']
+    labels = ['MinMax','Smoothed','LPF']
+    plot_signal(samples, 'Physical Fan Speed', labels)
     comparison_plot_summary(samples, labels)
 
     ######################
