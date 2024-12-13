@@ -130,15 +130,15 @@ def train_model(_model, _trainloader, _valloader, _device, _optimizer, _loss_fn,
 def err_analysis(_model, _loss_fn, _testloader, _device, _name='',show=True):
     mse, l1, y_pred, y = test_function(_model, _loss_fn, _testloader, _device)
     print(f'Test MSE:{round(mse,2)}, L1:{round(l1,2)}')
-    fig, ax = plt.subplots(figsize = (14,8))
-    ax.plot(np.arange(1,101), y_pred.cpu().numpy(), label = 'predictions', c = 'salmon')
-    ax.plot(np.arange(1,101), y.cpu().numpy(), label = 'true values', c = 'lightseagreen')
-    ax.set_xlabel('Test Engine Units', fontsize = 16)
-    ax.set_ylabel('RUL', fontsize = 16)
-    ax.grid(True)
-    ax.legend()
-    plt.savefig(f'./figs/err_fig_{_name}')
-    plt.show()
+    # fig, ax = plt.subplots(figsize = (14,8))
+    # # ax.plot(np.arange(1,101), y_pred.cpu().numpy(), label = 'predictions', c = 'salmon')
+    # # ax.plot(np.arange(1,101), y.cpu().numpy(), label = 'true values', c = 'lightseagreen')
+    # ax.set_xlabel('Test Engine Units', fontsize = 16)
+    # ax.set_ylabel('RUL', fontsize = 16)
+    # ax.grid(True)
+    # ax.legend()
+    # # plt.savefig(f'./figs/err_fig_{_name}')
+    # plt.show()
 
     # Assume predictions and true_rul are numpy arrays
     true_rul = y.cpu().numpy()
@@ -158,6 +158,7 @@ def err_analysis(_model, _loss_fn, _testloader, _device, _name='',show=True):
     print(f"95% Confidence Interval: ±{confidence_interval}")
 
     # Visualization (e.g., using matplotlib)
+    plt.title("LSTM Unsmooth Model FD001 Validation Results")
     plt.plot(predictions, label="Predicted RUL")
     plt.xlabel('Test Engine Units', fontsize = 16)
     plt.ylabel('RUL', fontsize = 16)
