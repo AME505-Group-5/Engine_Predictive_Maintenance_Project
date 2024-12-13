@@ -91,11 +91,11 @@ def get_LPF_filtered_data(_df_train, _df_test, cutoff_low=5, fs=1000, order=5):
     df_test_LPF['os1'] = _df_test['os1']
     df_test_LPF['os2'] = _df_test['os2']
     
-    for c in _df_train.columns[4:-1]:
-        s4  = np.array(_df_train[_df_train['Engine Unit'] == 4][c].copy())
-        s83 = np.array(_df_train[_df_train['Engine Unit'] == 83][c].copy())
-        plot_fft(s4,c+'_4')
-        plot_fft(s83,c+'_83')
+    # for c in _df_train.columns[4:-1]:
+    #     s4  = np.array(_df_train[_df_train['Engine Unit'] == 4][c].copy())
+    #     s83 = np.array(_df_train[_df_train['Engine Unit'] == 83][c].copy())
+    #     plot_fft(s4,c+'_4')
+    #     plot_fft(s83,c+'_83')
     
 
     b, a = butter_lowpass(cutoff_low, fs, order)
